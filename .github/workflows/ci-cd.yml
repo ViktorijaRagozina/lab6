@@ -1,0 +1,34 @@
+name: CI/CD
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  test-build-deploy:
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3 # uses an action that has already been created
+      - name: Set up node
+        uses: actions/setup-node@v3 # yet another helpful action that's already been created
+        with:
+          node-version: "20.5.0"
+      - run: npm ci 
+      - run: npm test
+      - run: npm run build
+      - name: Set up Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './dist'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
